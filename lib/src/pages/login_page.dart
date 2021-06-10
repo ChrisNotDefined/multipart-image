@@ -18,8 +18,8 @@ class LoginPage extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: <Color>[
-            Color.fromRGBO(63, 63, 153, 1.0),
-            Color.fromRGBO(90, 70, 178, 1.0)
+            Color.fromRGBO(98, 218, 56, 1.0),
+            Color.fromRGBO(90, 178, 70, 1.0)
           ]),
         ));
 
@@ -132,7 +132,7 @@ class LoginPage extends StatelessWidget {
             decoration: InputDecoration(
                 icon: Icon(
                   Icons.alternate_email,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreenAccent,
                 ),
                 hintText: 'ejemplo@dominio.com',
                 labelText: 'Correo electrónicos',
@@ -156,7 +156,7 @@ class LoginPage extends StatelessWidget {
             decoration: InputDecoration(
                 icon: Icon(
                   Icons.lock,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreenAccent,
                 ),
                 labelText: 'Contraseña',
                 counterText: snapshot.data,
@@ -172,30 +172,36 @@ class LoginPage extends StatelessWidget {
     return StreamBuilder(
       stream: bloc.formValidStream,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return RaisedButton(
+        return ElevatedButton(
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 15.0),
-            child: Text('Ingresar'),
+            child: Text(
+              'Ingresar',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5.0),
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            elevation: 0.0,
+            primary: Colors.lightGreenAccent,
           ),
-          elevation: 0.0,
-          color: Colors.deepPurple,
-          textColor: Colors.white,
           //onPressed: snapshot.hasData ?(){}:null,
-          onPressed: snapshot.hasData ? ()=>_login(bloc, context):null,
+          onPressed: snapshot.hasData ? () => _login(bloc, context) : null,
         );
       },
     );
   }
-  _login(LoginBloc bloc, BuildContext context){
+
+  _login(LoginBloc bloc, BuildContext context) {
     print('=========================');
     print('Email: ${bloc.email}');
     print('Password: ${bloc.password}');
     print('=========================');
 
     Navigator.pushReplacementNamed(context, 'home');
-
   }
 }

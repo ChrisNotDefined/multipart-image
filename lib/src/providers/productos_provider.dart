@@ -52,7 +52,7 @@ class ProductosProvider{
 
       /* final decodeData = json.decode(resp.body); */
       final Map<String, dynamic> decodeData = json.decode(resp.body);
-      final List<ProductoModel> productos = new List();
+      final List<ProductoModel> productos = [];
 
       if (decodeData == null) return [];
 

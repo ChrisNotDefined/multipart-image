@@ -27,6 +27,7 @@ class _ProductPageState extends State<ProductPage> {
 
     if (prodData != null) {
       producto = prodData;
+      print(producto.toJson());
     }
 
     return Scaffold(
@@ -96,13 +97,14 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _crearBoton() {
-    return RaisedButton.icon(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        primary: Colors.lightGreenAccent,
       ),
-      color: Colors.deepPurple,
-      textColor: Colors.white,
-      label: Text('Guardar'),
+      label: Text('Guardar', style: TextStyle(color: Colors.white)),
       icon: Icon(Icons.save),
       onPressed: (_guardando) ? null : _submit,
     );
@@ -110,39 +112,54 @@ class _ProductPageState extends State<ProductPage> {
 
   _crearDisponible() {
     return SwitchListTile(
+      contentPadding: EdgeInsets.symmetric(horizontal: 0),
       value: producto.disponible,
-      title: Text('disponible'),
-      activeColor: Colors.deepPurple,
+      title: Text('Disponible'),
+      activeColor: Colors.lightGreenAccent,
       onChanged: (value) => setState(() {
         producto.disponible = value;
       }),
     );
   }
 
-  void _submit() async{
+  void _submit() async {
     if (!formKey.currentState.validate()) return;
-    formKey.currentState.save(); //4
+    formKey.currentState.save();
 
     setState(() {
       _guardando = true;
     });
 
-    //subir imagen
-    if (foto != null){
+    // Subir imagen
+    if (foto != null) {
       producto.fotoUrl = await productoProvider.subirImagen(foto);
+    } else if (producto.id == null) {
+      // No imagen seleccionada para nuevo producto
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return _noImageAlert();
+        },
+      );
+      setState(() {
+        _guardando = false;
+      });
+      return;
     }
 
     if (producto.id == null) {
-      productoProvider.crearProducto(producto);
+      // New Product
+      await productoProvider.crearProducto(producto);
+      mostrarSnackBar('Registro Guardado');
     } else {
-      productoProvider.editarProducto(producto);
+      // Existent Product
+      await productoProvider.editarProducto(producto);
+      mostrarSnackBar('Registro Actualizado');
     }
 
-/*     setState(() {
-      _guardando = true;
+    setState(() {
+      _guardando = false;
     });
- */
-    mostrarSnackBar('Registro Guardado');
 
     Navigator.pop(context);
   }
@@ -152,11 +169,13 @@ class _ProductPageState extends State<ProductPage> {
       content: Text(mensaje),
       duration: Duration(milliseconds: 1500),
     );
-    scaffoldKey.currentState.showSnackBar(snackbar);
+    ScaffoldMessenger.of(context).showSnackBar(snackbar);
   }
 
   _seleccionarFoto() async {
     PickedFile image = await _picker.getImage(source: ImageSource.gallery);
+    if (image == null) return;
+
     foto = File(image.path);
     if (foto != null) {
       //limpieza
@@ -166,7 +185,7 @@ class _ProductPageState extends State<ProductPage> {
     print(foto.path);
   }
 
-  _mostrarFoto() {
+  Widget _mostrarFoto() {
     if (producto.fotoUrl != null) {
       return FadeInImage(
         image: NetworkImage(producto.fotoUrl),
@@ -192,6 +211,9 @@ class _ProductPageState extends State<ProductPage> {
 
   _procesarImagen(ImageSource origen) async {
     PickedFile image = await _picker.getImage(source: origen);
+    if (image == null) {
+      return;
+    }
     foto = File(image.path);
 
     if (foto != null) {
@@ -200,5 +222,36 @@ class _ProductPageState extends State<ProductPage> {
     print('fotito seleccionada');
     setState(() {});
     print(foto.path);
+  }
+
+  Widget _noImageAlert() {
+    return AlertDialog(
+      title: Text('Alerta'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.error,
+            color: Colors.yellow[700],
+            size: 80.0,
+          ),
+          SizedBox(height: 10.0),
+          Text(
+            'No has seleccionado una imagen.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10.0),
+          Text(
+            'Selecciona una imagen para continuar',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black45),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: Navigator.of(context).pop, child: Text('OK'))
+      ],
+    );
   }
 }
